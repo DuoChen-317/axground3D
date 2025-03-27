@@ -1,1 +1,1 @@
-# axground3D
+# Auxiliary future state generation framework using diffusion model
