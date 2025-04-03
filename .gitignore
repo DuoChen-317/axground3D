@@ -1,3 +1,9 @@
+data/.DS_Store
+local.yaml
 .idea
 
+data
+
+habitat-sim
+habitat-lab
 UniK3D
