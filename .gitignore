@@ -2,9 +2,8 @@ data/.DS_Store
 local.yaml
 .idea
 
-data/scene_datasets
+data
 
 habitat-sim
 habitat-lab
-
-
+UniK3D
