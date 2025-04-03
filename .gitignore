@@ -1,0 +1,10 @@
+data/.DS_Store
+local.yaml
+.idea
+
+data/scene_datasets
+
+habitat-sim
+habitat-lab
+
+
