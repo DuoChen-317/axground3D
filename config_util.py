@@ -16,3 +16,5 @@ def load_config(file_path):
 config = load_config(CONFIG_FILE_PATH)
 
 MP3D_DATASET_PATH = config['mp3d_habitat_scene_dataset_path']
+
+VLM_MODEL_PATH = config['vlm_model_path']
