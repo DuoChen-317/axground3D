@@ -42,8 +42,8 @@ def load_and_view(ply_path, out_path, info_path):
     vis.update_renderer()
 
     # set the camera intrinsics
-    intrinsic = o3d.camera.PinholeCameraIntrinsic()
-    intrinsic.set_intrinsics(img_width, img_height, fx, fy, cx, cy)
+    # intrinsic = o3d.camera.PinholeCameraIntrinsic()
+    # intrinsic.set_intrinsics(img_width, img_height, fx, fy, cx, cy)
     ctr = vis.get_view_control()
     # Wait a moment for everything to load
     time.sleep(0.5)
@@ -70,4 +70,4 @@ def load_and_view(ply_path, out_path, info_path):
     vis.destroy_window()
 
 
-load_and_view("data/out/bedroom/bedroom.ply","data/out/bedroom","data/out/bedroom/bedroom_info.json")
+load_and_view("data/out/view_001/view_001.ply","data/out/view_001","data/out/view_001/view_001_info.json")

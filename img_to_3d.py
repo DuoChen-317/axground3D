@@ -76,7 +76,7 @@ def infer(input_path, output_path,portrait = False,save_ply= True, save_map=True
     print(f'using device:{device}')
     model = model.to(device).eval()
     # open the input image
-    img = Image.open(input_path)
+    img = Image.open(input_path).convert("RGB")
     width, height = img.size # get the size of image
     # preprocess the image
     rgb = np.array(img)
