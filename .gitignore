@@ -3,6 +3,8 @@ local.yaml
 .idea
 model/
 data
+/__pycache__/
+
 
 habitat-sim
 habitat-lab

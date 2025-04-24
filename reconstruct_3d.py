@@ -4,9 +4,10 @@ import os.path
 import time
 import numpy as np
 import open3d as o3d
+import math
 
 def estimate_intrinsics(width, height, fov_deg=60):
-    import math
+    
     fov = math.radians(fov_deg)
     fx = fy = 0.5 * width / math.tan(fov / 2)
     cx = width / 2
