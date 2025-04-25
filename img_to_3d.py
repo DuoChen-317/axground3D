@@ -75,12 +75,14 @@ def infer(input_path, output_path,portrait = False,save_ply= True, save_map=True
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'using device:{device}')
     model = model.to(device).eval()
+
     # open the input image
     img = Image.open(input_path).convert("RGB")
     width, height = img.size # get the size of image
     # preprocess the image
     rgb = np.array(img)
     rgb_torch = torch.from_numpy(rgb).permute(2, 0, 1)
+
     # camera setting
     camera = None
     camera_path = camera_config # get the camera path config
@@ -129,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument("--interpolation-mode", type=str, default="bilinear", choices=["nearest", "nearest-exact", "bilinear"], help="Interpolation method.")
     args = parser.parse_args()
 
-    # ✅ Correct function call:
+    #  Correct function call:
     infer(
         input_path=args.input,
         portrait=args.portrait,
@@ -140,3 +142,4 @@ if __name__ == "__main__":
         interpolation_mode=args.interpolation_mode,
         camera_config=args.camera_path
     )
+
