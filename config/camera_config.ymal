@@ -1,0 +1,4 @@
+
+"name": "Pinhole",
+"params": [fx, fy, cx, cy, width, height]
+
