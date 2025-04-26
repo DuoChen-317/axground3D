@@ -5,8 +5,8 @@ model/
 data
 /__pycache__/
 
-./frames/fake/*
-./frames/real/*
+frames/fake/*
+frames/real/*
 habitat-sim
 habitat-lab
 UniK3D
