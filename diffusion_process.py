@@ -26,10 +26,10 @@ PIPE.enable_attention_slicing()  # reduce VRAM usage
 def fill_in(init_image: Image.Image, mask_image: Image.Image) -> Image.Image:
     # Inpaint
     result = PIPE(
-        prompt="a indoor room",  # empty prompt to rely solely on surrounding context
+        prompt="a indoor room space, with funitures ",  # empty prompt to rely solely on surrounding context
         image=init_image,
         mask_image=mask_image,
-        guidance_scale=7.5,  # adjust as needed
+        guidance_scale=6.5,  # adjust as needed
         num_inference_steps=25,
     ).images[0]
 

@@ -16,9 +16,9 @@ from config_util import (
     ACTION_CHUNK,
 )
 
-save_intermediate = True
+save_intermediate = False
 
-for scene_id in MP3D_DATASET_SCENE_IDS_LIST[0:1]:
+for scene_id in MP3D_DATASET_SCENE_IDS_LIST:
     for ids in range(NUM_OF_NODES_PRE_SCENE):
         
         ply_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}.ply")
