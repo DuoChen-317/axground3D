@@ -127,8 +127,8 @@ class ViewRenderer:
         self.vis.update_renderer()
     
         # Capture color and depth buffers
-        color_buf = np.asarray(self.vis.vis.capture_screen_float_buffer(do_render=False))  # float [0,1]
-        depth_buf = np.asarray(self.vis.vis.capture_depth_float_buffer(do_render=False))   # float depth
+        color_buf = np.asarray(self.vis.capture_screen_float_buffer(do_render=False))  # float [0,1]
+        depth_buf = np.asarray(self.vis.capture_depth_float_buffer(do_render=False))   # float depth
 
         # convert to 8-bit RGB
         rgb8 = (np.clip(color_buf, 0.0, 1.0) * 255).astype(np.uint8)

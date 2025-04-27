@@ -1,10 +1,14 @@
 import os
+
+import imageio
+import numpy as np
 os.environ["OMP_NUM_THREADS"]       = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"]      = "1"
 
 from reconstruct_3d import ViewRenderer
-# from diffusion_process import fill_in
+import open3d as o3d
+from diffusion_process import fill_in
 from config_util import (
     MP3D_DATASET_PATH,
     MP3D_DATASET_SCENE_IDS_LIST,
@@ -12,10 +16,45 @@ from config_util import (
     ACTION_CHUNK,
 )
 
+easy = True
 
 for scene_id in MP3D_DATASET_SCENE_IDS_LIST:
-    ply_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s0_base.ply")
-    depth_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s0_base_depth.png")
-    ray_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s0_base_rays.png")
+    for ids in range(NUM_OF_NODES_PRE_SCENE):
+        
 
-    print(ply_path, depth_path, ray_path)
+        if easy:
+            ply_path = os.path.join("./data/scenes",scene_id, f"{scene_id}.ply")
+            depth_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_depth.png")
+            ray_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_rays.png")
+        else:
+            ply_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s{ids}.ply")
+            depth_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s{ids}_depth.png")
+            ray_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s{ids}_rays.png")
+        
+        pcd = o3d.io.read_point_cloud(ply_path)
+        depth = imageio.imread(depth_path).astype(np.float32)
+        ray = imageio.imread(ray_path).astype(np.float32)
+        myVRD = ViewRenderer(pcd,depth,ray)
+
+        for _id, action in enumerate(ACTION_CHUNK):
+            myVRD.render_view()
+            if _id != 2 and _id != 3:
+
+                if action["name"] == "move_forward":
+                    myVRD.move_forward(action["repeat"])
+                elif action["name"] == "turn_left":
+                    myVRD.rotate_extrinsic(-30*action["repeat"])
+                elif action["name"] == "turn_right":
+                    myVRD.rotate_extrinsic(30*action["repeat"])
+                rgb_image, mask_image =  myVRD.render_view()
+                # rgb_image.show(title = f"{scene_id}_s{ids}_step{_id}")
+                # mask_image.show(title = f"{scene_id}_s{ids}_step{_id}_mask")
+                result_img = fill_in(rgb_image, mask_image)
+                result_img.save(f"./frames/fake/{scene_id}_s{ids}_step{_id}.png")
+            else:
+                if action["name"] == "move_forward":
+                    myVRD.move_forward(action["repeat"])
+                elif action["name"] == "turn_left":
+                    myVRD.rotate_extrinsic(-30*action["repeat"])
+                elif action["name"] == "turn_right":
+                    myVRD.rotate_extrinsic(30*action["repeat"])
