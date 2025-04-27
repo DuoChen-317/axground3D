@@ -112,6 +112,15 @@ This project is MIT Licensed. See `LICENSE` for details.
 
 ## 📚 Citation
 
-If you use this code in your research, please cite:
+If you find our work helpful, feel free to give us a cite:
+```
+@misc{axground3D,
+    title = {Auxiliary future state generation framework using diffusion model},
+    url = {https://github.com/YichengDuan/axground3D},
+    author = {Yicheng Duan, Duo Chen},
+    month = {April},
+    year = {2025}
+}
+```
 
 

@@ -19,7 +19,8 @@ vl_gpt = vl_gpt.to(torch.bfloat16).to('mps').eval()
 conversation = [
     {
         "role": "<|User|>",
-        "content": "A stunning princess from kabul in red, white traditional clothing, blue eyes, brown hair",
+        "content": "A indoor scene according to the image provided. KEEP CONSISTIS. But move forward 1m and generate a new image.",
+        "images": [ "./data/vlm_test1.jpg" ],
     },
     {"role": "<|Assistant|>", "content": ""},
 ]
@@ -38,7 +39,7 @@ def generate(
     vl_chat_processor: VLChatProcessor,
     prompt: str,
     temperature: float = 1,
-    parallel_size: int = 1,
+    parallel_size: int = 5,
     cfg_weight: float = 5,
     image_token_num_per_image: int = 576,
     img_size: int = 384,

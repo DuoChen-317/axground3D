@@ -9,7 +9,7 @@ import threading
 import habitat_sim
 from habitat_sim.utils.settings import default_sim_settings, make_cfg
 import habitat_sim.agent
-
+from PIL import Image
 # Create a global thread-safe queue for commands.
 command_queue = queue.Queue()
 
@@ -104,7 +104,7 @@ class HabitatSimNonInteractiveViewer(Application):
             self.sim.step_world(1.0 / self.fps)
 
 
-    def save_viewpoint_image(self, file_path,drop_depth = True):
+    def save_viewpoint_image(self, file_path, drop_depth = True):
         """
         Captures the current image from the agent's "color_sensor" using the observation API and saves it.
         """
@@ -123,6 +123,11 @@ class HabitatSimNonInteractiveViewer(Application):
             print(f"Viewpoint image saved to {file_path}")
         except ImportError:
             print("Please install imageio: pip install imageio")
+        
+        result_image = Image.fromarray(color_img)
+
+        return result_image
+
 
     def draw_event(self):
         # Process any pending commands from the command queue.
