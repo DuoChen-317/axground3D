@@ -51,11 +51,11 @@ def save(rgb, outputs, name, base_path, save_map, save_pointcloud):
         print(f"Point cloud saved to {base_path}")
 
 
-def infer(input_path, output_path,portrait = False,save_ply= True, save_map=True, resolution_level=9 ,interpolation_mode="bilinear", camera_config = None):
+def infer(input_img, output_path=None,portrait = False,save_ply= False, save_map=False, resolution_level=9 ,interpolation_mode="bilinear", camera_config = None):
     """
     Inference function for UniK3D model.
     Args:
-        input_path (str): Path to the input RGB image
+        input_img (PIL IMAGE): PIL image object
         save_ply (bool): Whether to save the point cloud as a PLY file
         save_map (bool): Whether to save the depth map and rays as PNG images
         output_path (str): Base directory to save the output files
@@ -77,10 +77,9 @@ def infer(input_path, output_path,portrait = False,save_ply= True, save_map=True
     model = model.to(device).eval()
 
     # open the input image
-    img = Image.open(input_path).convert("RGB")
-    width, height = img.size # get the size of image
+    width, height = input_img.size # get the size of image
     # preprocess the image
-    rgb = np.array(img)
+    rgb = np.array(input_img)
     rgb_torch = torch.from_numpy(rgb).permute(2, 0, 1)
 
     # camera setting
@@ -98,48 +97,43 @@ def infer(input_path, output_path,portrait = False,save_ply= True, save_map=True
     print("start inference...")
     outputs = model.infer(rgb=rgb_torch, camera=camera, normalize=True, rays=None)
 
-    # add the image size and portrait information to the output
-    outputs["info"] = {
-        "width": width,
-        "height": height,
-        "portrait": portrait
-    }
-
     print("inference finished")
-    # get the output path and create a dict to store all the output
-    name = os.path.splitext(os.path.basename(input_path))[0]
-    save_dir = os.path.join(output_path, name)
-    os.makedirs(save_dir, exist_ok=True)
+
 
     # save ply and other images
     if save_map or save_ply:
+        # get the output path and create a dict to store all the output
+        name = os.path.splitext(os.path.basename(output_path))[0]
+        save_dir = os.path.join(output_path, name)
+        os.makedirs(save_dir, exist_ok=True)
         save(rgb_torch, outputs, name=name, base_path=save_dir, save_map=save_map, save_pointcloud=save_ply)
         print("output saved")
+
     return outputs
 
 
-if __name__ == "__main__":
-    # Arguments
-    parser = argparse.ArgumentParser(description='Inference script', conflict_handler='resolve')
-    parser.add_argument("--input", type=str, required=True, help="Path to input image.")
-    parser.add_argument("--output", type=str, required=True, help="Path to output directory.")
-    parser.add_argument("--portrait", default=False, action="store_true", help="Is the image a portrait?")
-    parser.add_argument("--camera-path", type=str, default=None, help="Path to camera parameters json file.")
-    parser.add_argument("--save", default=True,action="store_true", help="Save outputs as (colorized) png.")
-    parser.add_argument("--save-ply",default=True, action="store_true", help="Save pointcloud as ply.")
-    parser.add_argument("--resolution-level", type=int, default=9, choices=list(range(10)), help="Resolution level in [0,10).")
-    parser.add_argument("--interpolation-mode", type=str, default="bilinear", choices=["nearest", "nearest-exact", "bilinear"], help="Interpolation method.")
-    args = parser.parse_args()
-
-    #  Correct function call:
-    infer(
-        input_path=args.input,
-        portrait=args.portrait,
-        save_ply=args.save_ply,
-        save_map=args.save,
-        output_path=args.output,
-        resolution_level=args.resolution_level,
-        interpolation_mode=args.interpolation_mode,
-        camera_config=args.camera_path
-    )
+# if __name__ == "__main__":
+#     # Arguments
+#     parser = argparse.ArgumentParser(description='Inference script', conflict_handler='resolve')
+#     parser.add_argument("--input", type=str, required=True, help="Path to input image.")
+#     parser.add_argument("--output", type=str, required=True, help="Path to output directory.")
+#     parser.add_argument("--portrait", default=False, action="store_true", help="Is the image a portrait?")
+#     parser.add_argument("--camera-path", type=str, default=None, help="Path to camera parameters json file.")
+#     parser.add_argument("--save", default=True,action="store_true", help="Save outputs as (colorized) png.")
+#     parser.add_argument("--save-ply",default=True, action="store_true", help="Save pointcloud as ply.")
+#     parser.add_argument("--resolution-level", type=int, default=9, choices=list(range(10)), help="Resolution level in [0,10).")
+#     parser.add_argument("--interpolation-mode", type=str, default="bilinear", choices=["nearest", "nearest-exact", "bilinear"], help="Interpolation method.")
+#     args = parser.parse_args()
+#
+#     #  Correct function call:
+#     infer(
+#         input_path=args.input,
+#         portrait=args.portrait,
+#         save_ply=args.save_ply,
+#         save_map=args.save,
+#         output_path=args.output,
+#         resolution_level=args.resolution_level,
+#         interpolation_mode=args.interpolation_mode,
+#         camera_config=args.camera_path
+#     )
 
