@@ -13,9 +13,9 @@ class ViewRenderer:
         agent_settings = {
             'height': 1.5,
             'intrinsic': {
-                'width': 800, 'height': 600,
-                'fx': 400.0, 'fy': 400.0,
-                'cx': 400.0, 'cy': 300.0
+                'width': 512, 'height': 512,
+                'fx': 256.0, 'fy': 256.0,
+                'cx': 256.0, 'cy': 256.0
             }
         }
         self.agent_settings = agent_settings
@@ -231,11 +231,11 @@ class ViewRenderer:
 def test():
     # 1. Load test files
     # Load a test PLY (you should have a ply file already)
-    pcd = o3d.io.read_point_cloud("data/output/view_002/view_002.ply")
+    pcd = o3d.io.read_point_cloud("data/scenes/1LXtFkjw3qL/1LXtFkjw3qL.ply")
 
     # Load test depth and ray images (they can come from UniK3D output or saved .pngs)
-    depth = imageio.imread("data/output/view_002/view_002_depth.png").astype(np.float32)
-    ray = imageio.imread("data/output/view_002/view_002_rays.png").astype(np.float32)
+    depth = imageio.imread("data/scenes/1LXtFkjw3qL/1LXtFkjw3qL_depth.png").astype(np.float32)
+    ray = imageio.imread("data/scenes/1LXtFkjw3qL/1LXtFkjw3qL_rays.png").astype(np.float32)
 
     # If ray is uint8 0-255, you can preprocess inside the class (already handled)
 
@@ -247,20 +247,19 @@ def test():
     renderer.save_image("original.png")
 
     # move forward for 1 meter
-    renderer.move_forward(-1)
+    renderer.move_forward(1)
     renderer.render_view()
     renderer.save_image("forward.png")
-
 
     # # 4. Rotate right 30 degrees and save
     # renderer.rotate_extrinsic(yaw_deg=15)
     # renderer.render_view()
     # renderer.save_image("right30.png")
-    #
+
     # 5. Rotate left 60 degrees and save
     renderer.rotate_extrinsic(yaw_deg=-30)
     renderer.render_view()
-    renderer.close()
+
 
 
 # test()

@@ -26,12 +26,6 @@ def save(rgb, outputs, name, base_path, save_map, save_pointcloud):
     depth = outputs["depth"]
     rays = outputs["rays"]
     points = outputs["points"]
-    info = outputs["info"]
-    # save the output info as JSON file
-    info_json = os.path.join(base_path, f"{name}_info.json")
-    with open(info_json, "w") as f:
-        json.dump(info, f, indent=4)
-    print(f"Info saved to {info_json}")
     # save the depth and ray as image
     depth = depth.cpu().numpy()
     rays = ((rays + 1) * 127.5).clip(0, 255)
@@ -51,7 +45,7 @@ def save(rgb, outputs, name, base_path, save_map, save_pointcloud):
         print(f"Point cloud saved to {base_path}")
 
 
-def infer(input_img, output_path=None,portrait = False,save_ply= False, save_map=False, resolution_level=9 ,interpolation_mode="bilinear", camera_config = None):
+def infer(input_img, output_path=None,save_name=None,save_ply= False, save_map=False, resolution_level=9 ,interpolation_mode="bilinear", camera_config = None):
     """
     Inference function for UniK3D model.
     Args:
@@ -59,7 +53,7 @@ def infer(input_img, output_path=None,portrait = False,save_ply= False, save_map
         save_ply (bool): Whether to save the point cloud as a PLY file
         save_map (bool): Whether to save the depth map and rays as PNG images
         output_path (str): Base directory to save the output files
-        portrait: if the image is a portrait
+        save_name: the name of folder
         resolution_level (int): Resolution level for the model (default: 9)
         interpolation_mode (str): Interpolation mode for the model (default: "bilinear")
         camera_config (str): Path to the camera configuration file (default: None)
@@ -103,10 +97,9 @@ def infer(input_img, output_path=None,portrait = False,save_ply= False, save_map
     # save ply and other images
     if save_map or save_ply:
         # get the output path and create a dict to store all the output
-        name = os.path.splitext(os.path.basename(output_path))[0]
-        save_dir = os.path.join(output_path, name)
+        save_dir = os.path.join(output_path, save_name)
         os.makedirs(save_dir, exist_ok=True)
-        save(rgb_torch, outputs, name=name, base_path=save_dir, save_map=save_map, save_pointcloud=save_ply)
+        save(rgb_torch, outputs, name=save_name, base_path=save_dir, save_map=save_map, save_pointcloud=save_ply)
         print("output saved")
 
     return outputs
