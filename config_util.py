@@ -49,3 +49,11 @@ if not os.path.exists('./frames/real'):
 # check if ./frames/state_base folder exists
 if not os.path.exists('./frames/state_base'):
     os.makedirs('./frames/state_base')
+
+
+ACTION_CHUNK = [{'name': 'turn_left', 'repeat': 1},
+                     {'name': 'turn_right', 'repeat': 2},
+                     {'name': 'turn_left', 'repeat': 1},
+                     {'name': 'move_forward', 'repeat': 1},
+                     {'name': 'turn_left', 'repeat': 1},
+                     {'name': 'turn_right', 'repeat': 2}]

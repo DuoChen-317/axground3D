@@ -11,3 +11,6 @@ frames/real/*
 habitat-sim
 habitat-lab
 UniK3D
+.DS_Store
+sim_connect/__pycache__/__init__.cpython-39.pyc
+sim_connect/__pycache__/hb.cpython-39.pyc
