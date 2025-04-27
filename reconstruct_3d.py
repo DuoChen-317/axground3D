@@ -1,9 +1,9 @@
 import os
-
+from diffusers import utils
 import imageio
 import numpy as np
 import open3d as o3d
-
+from PIL import Image
 
 class ViewRenderer:
     def __init__(self, ply, depth, rays):
@@ -22,7 +22,7 @@ class ViewRenderer:
         self.ply = ply
 
         # estimate camera extrinsic
-        extrinsic = estimate_extrinsic_from_ray_depth(depth=depth,ray=rays,agent_settings=agent_settings)
+        extrinsic = self.estimate_extrinsic_from_ray_depth(depth=depth,ray=rays,agent_settings=agent_settings)
         # Build camera intrinsics
         intrinsic = agent_settings['intrinsic']
         pinhole = o3d.camera.PinholeCameraIntrinsic(
@@ -125,9 +125,21 @@ class ViewRenderer:
         self.ctr.convert_from_pinhole_camera_parameters(self.cam_param, allow_arbitrary=True)
         self.vis.poll_events()
         self.vis.update_renderer()
-        img = np.asarray(self.vis.capture_screen_float_buffer(do_render=True))  # float in [0,1]
-        img = (img * 255).clip(0, 255).astype(np.uint8)
-        return img
+    
+        # Capture color and depth buffers
+        color_buf = np.asarray(self.vis.vis.capture_screen_float_buffer(do_render=False))  # float [0,1]
+        depth_buf = np.asarray(self.vis.vis.capture_depth_float_buffer(do_render=False))   # float depth
+
+        # convert to 8-bit RGB
+        rgb8 = (np.clip(color_buf, 0.0, 1.0) * 255).astype(np.uint8)
+        rgb_image = utils.load_image(Image.fromarray(rgb8))
+       
+        alpha = ((depth_buf != 0.0).astype(np.uint8) * 255)
+        # reverse alpha
+        alpha = 255 - alpha
+        mask_image = utils.load_image(Image.fromarray(alpha))
+        
+        return rgb_image,mask_image
 
 
     def save_image(self, save_path):
@@ -138,80 +150,81 @@ class ViewRenderer:
     def close(self):
         self.vis.destroy_window()
         return
+    
+    @staticmethod
+    def estimate_extrinsic_from_ray_depth(ray: np.ndarray,
+                                        depth: np.ndarray,
+                                        agent_settings: dict,
+                                        forward_uv=None,
+                                        up_uv=None,
+                                        right_uv=None):
+        """
+        Estimate extrinsic given ray and depth images (already loaded as numpy arrays).
 
-def estimate_extrinsic_from_ray_depth(ray: np.ndarray,
-                                      depth: np.ndarray,
-                                      agent_settings: dict,
-                                      forward_uv=None,
-                                      up_uv=None,
-                                      right_uv=None):
-    """
-    Estimate extrinsic given ray and depth images (already loaded as numpy arrays).
+        Args:
+            ray (np.ndarray): Ray direction image, shape (H,W,3), value in [-1,1] or [0,255].
+            depth (np.ndarray): Depth map, shape (H,W).
+            agent_settings (dict): Contains height, intrinsic info.
+            forward_uv (tuple): Pixel location (u,v) for front vector.
+            up_uv (tuple): Pixel location (u,v) for up vector.
+            right_uv (tuple): Pixel location (u,v) for right vector.
 
-    Args:
-        ray (np.ndarray): Ray direction image, shape (H,W,3), value in [-1,1] or [0,255].
-        depth (np.ndarray): Depth map, shape (H,W).
-        agent_settings (dict): Contains height, intrinsic info.
-        forward_uv (tuple): Pixel location (u,v) for front vector.
-        up_uv (tuple): Pixel location (u,v) for up vector.
-        right_uv (tuple): Pixel location (u,v) for right vector.
+        Returns:
+            np.ndarray: 4x4 Extrinsic matrix (world → camera)
+        """
 
-    Returns:
-        np.ndarray: 4x4 Extrinsic matrix (world → camera)
-    """
+        # If input ray is [0,255], rescale to [-1,1]
+        if ray.max() > 1.5:
+            ray = ray.astype(np.float32) / 255.0
+            ray = ray * 2.0 - 1.0
 
-    # If input ray is [0,255], rescale to [-1,1]
-    if ray.max() > 1.5:
-        ray = ray.astype(np.float32) / 255.0
-        ray = ray * 2.0 - 1.0
+        # Normalize ray directions
+        norms = np.linalg.norm(ray, axis=2, keepdims=True) + 1e-8
+        ray = ray / norms
 
-    # Normalize ray directions
-    norms = np.linalg.norm(ray, axis=2, keepdims=True) + 1e-8
-    ray = ray / norms
+        H, W, _ = ray.shape
 
-    H, W, _ = ray.shape
+        # 2. Default pixel selection
+        if forward_uv is None:
+            forward_uv = (W // 2, H // 2)
+        if up_uv is None:
+            up_uv = (W // 2, H // 4)
+        if right_uv is None:
+            right_uv = (3 * W // 4, H // 2)
 
-    # 2. Default pixel selection
-    if forward_uv is None:
-        forward_uv = (W // 2, H // 2)
-    if up_uv is None:
-        up_uv = (W // 2, H // 4)
-    if right_uv is None:
-        right_uv = (3 * W // 4, H // 2)
+        # 3. Extract direction vectors
+        f = ray[forward_uv[1], forward_uv[0]]
+        u = ray[up_uv[1], up_uv[0]]
+        r = ray[right_uv[1], right_uv[0]]
 
-    # 3. Extract direction vectors
-    f = ray[forward_uv[1], forward_uv[0]]
-    u = ray[up_uv[1], up_uv[0]]
-    r = ray[right_uv[1], right_uv[0]]
+        # Normalize again
+        f /= np.linalg.norm(f)
+        u /= np.linalg.norm(u)
+        r /= np.linalg.norm(r)
 
-    # Normalize again
-    f /= np.linalg.norm(f)
-    u /= np.linalg.norm(u)
-    r /= np.linalg.norm(r)
+        # 4. Construct rotation matrix R (world → camera)
+        y_new = np.array([0, 1, 0], dtype=np.float32)  # Global vertical
+        f_new = f / np.linalg.norm(f)
+        r_new = np.cross(y_new, f_new)
+        r_new /= np.linalg.norm(r_new)
+        u_new = np.cross(f_new, r_new)
 
-    # 4. Construct rotation matrix R (world → camera)
-    y_new = np.array([0, 1, 0], dtype=np.float32)  # Global vertical
-    f_new = f / np.linalg.norm(f)
-    r_new = np.cross(y_new, f_new)
-    r_new /= np.linalg.norm(r_new)
-    u_new = np.cross(f_new, r_new)
+        R = np.vstack([r_new, u_new, f_new])
 
-    R = np.vstack([r_new, u_new, f_new])
+        # 5. Translation
+        h = agent_settings['height']
+        C = np.array([0.0, 0.0, h], dtype=np.float32)
+        C = C - f_new * 1.0
+        t = - R @ C
 
-    # 5. Translation
-    h = agent_settings['height']
-    C = np.array([0.0, 0.0, h], dtype=np.float32)
-    C = C - f_new * 1.0
-    t = - R @ C
+        # 6. Assemble extrinsic
+        extrinsic = np.eye(4, dtype=np.float32)
+        extrinsic[:3, :3] = R
+        extrinsic[:3, 3] = t
 
-    # 6. Assemble extrinsic
-    extrinsic = np.eye(4, dtype=np.float32)
-    extrinsic[:3, :3] = R
-    extrinsic[:3, 3] = t
-
-    print("Estimated extrinsic (world→camera):")
-    print(extrinsic)
-    return extrinsic
+        print("Estimated extrinsic (world→camera):")
+        print(extrinsic)
+        return extrinsic
 
 
 
@@ -246,8 +259,7 @@ def test():
     # 5. Rotate left 60 degrees and save
     renderer.rotate_extrinsic(yaw_deg=-30)
     renderer.render_view()
-    renderer.save_image("left30.png")
 
 
 
-test()
+# test()
