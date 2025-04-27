@@ -1,14 +1,14 @@
 import os
 
 import imageio
+from joblib import Parallel, delayed
 import numpy as np
 os.environ["OMP_NUM_THREADS"]       = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"]      = "1"
+
 
 from reconstruct_3d import ViewRenderer
 import open3d as o3d
-# from diffusion_process import fill_in
+from diffusion_process import ViewDiffuser
 from config_util import (
     MP3D_DATASET_PATH,
     MP3D_DATASET_SCENE_IDS_LIST,
@@ -16,12 +16,14 @@ from config_util import (
     ACTION_CHUNK,
 )
 import tqdm
-save_intermediate = True
-perdiction = False
-for scene_id in tqdm.tqdm(MP3D_DATASET_SCENE_IDS_LIST):
 
+
+
+def run_gen_fake(scene_id:str):
+    save_intermediate = False
+    my_diffuser = ViewDiffuser()
     for ids in range(NUM_OF_NODES_PRE_SCENE):
-        
+            
         ply_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}.ply")
         depth_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}_depth.png")
         ray_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}_rays.png")
@@ -47,12 +49,8 @@ for scene_id in tqdm.tqdm(MP3D_DATASET_SCENE_IDS_LIST):
                     rgb_image.save(f"./frames/interm/{scene_id}_s{ids}_step{_id}.png")
                     mask_image.save(f"./frames/interm/{scene_id}_s{ids}_step{_id}_mask.png")
                 
-                # if perdiction:
-                #     # fill in the mask
-                #     rgb_image = imageio.imread(f"./frames/interm/{scene_id}_s{ids}_step{_id}.png")
-                #     mask_image = imageio.imread(f"./frames/interm/{scene_id}_s{ids}_step{_id}_mask.png")
-                #     result_img = fill_in(rgb_image, mask_image)
-                #     result_img.save(f"./frames/fake/{scene_id}_s{ids}_step{_id}.png")
+                result_img = my_diffuser.fill_in(rgb_image, mask_image)
+                result_img.save(f"./frames/fake/{scene_id}_s{ids}_step{_id}.png")
                 
             else:
                 if action["name"] == "move_forward":
@@ -62,3 +60,17 @@ for scene_id in tqdm.tqdm(MP3D_DATASET_SCENE_IDS_LIST):
                 elif action["name"] == "turn_right":
                     myVRD.rotate_extrinsic(30*action["repeat"])
         myVRD.close()
+
+
+
+
+
+if __name__ == "__main__":
+
+    results = Parallel(n_jobs=2)(
+            # stack the scene into path
+            delayed(run_gen_fake)(
+                scene_id=scene_id,
+            )
+            for scene_id in MP3D_DATASET_SCENE_IDS_LIST
+        )
