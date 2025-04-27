@@ -43,7 +43,7 @@ def fill_in(init_image:Image.Image, mask_image:Image.Image) -> Image.Image:
         guidance_scale=7.5,  # adjust as needed
         num_inference_steps=25
     ).images[0]
-    result.show()  # Display the result
+    
     return result
 
 if __name__ == "__main__":
