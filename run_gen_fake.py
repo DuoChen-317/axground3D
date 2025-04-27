@@ -16,20 +16,14 @@ from config_util import (
     ACTION_CHUNK,
 )
 
-easy = True
+save_intermediate = True
 
-for scene_id in MP3D_DATASET_SCENE_IDS_LIST:
+for scene_id in MP3D_DATASET_SCENE_IDS_LIST[0:1]:
     for ids in range(NUM_OF_NODES_PRE_SCENE):
         
-
-        if easy:
-            ply_path = os.path.join("./data/scenes",scene_id, f"{scene_id}.ply")
-            depth_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_depth.png")
-            ray_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_rays.png")
-        else:
-            ply_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s{ids}.ply")
-            depth_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s{ids}_depth.png")
-            ray_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s{ids}_rays.png")
+        ply_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}.ply")
+        depth_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}_depth.png")
+        ray_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}_rays.png")
         
         pcd = o3d.io.read_point_cloud(ply_path)
         depth = imageio.imread(depth_path).astype(np.float32)
@@ -47,8 +41,10 @@ for scene_id in MP3D_DATASET_SCENE_IDS_LIST:
                 elif action["name"] == "turn_right":
                     myVRD.rotate_extrinsic(30*action["repeat"])
                 rgb_image, mask_image =  myVRD.render_view()
-                # rgb_image.show(title = f"{scene_id}_s{ids}_step{_id}")
-                # mask_image.show(title = f"{scene_id}_s{ids}_step{_id}_mask")
+                if save_intermediate:
+                    rgb_image.save(f"./frames/interm/{scene_id}_s{ids}_step{_id}.png")
+                    mask_image.save(f"./frames/interm/{scene_id}_s{ids}_step{_id}_mask.png")
+                
                 result_img = fill_in(rgb_image, mask_image)
                 result_img.save(f"./frames/fake/{scene_id}_s{ids}_step{_id}.png")
             else:
