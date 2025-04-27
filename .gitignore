@@ -12,6 +12,7 @@ data/*.ply
 
 frames/fake/*
 frames/real/*
+frames/interm/*
 
 habitat-sim
 habitat-lab
