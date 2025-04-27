@@ -1,0 +1,1 @@
+from config_util import MP3D_DATASET_PATH,NUM_OF_NODES_PRE_SCENE

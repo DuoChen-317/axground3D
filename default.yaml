@@ -1,1 +1,3 @@
 mp3d_habitat_scene_dataset_path: ""
+vlm_model_path: "./model/Janus-Pro-1B"
+number_of_node_per_scene: 1
