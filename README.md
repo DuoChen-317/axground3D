@@ -6,26 +6,13 @@
 ---
 
 ## 📖 Table of Contents
-
-- [🚀 Overview](#-overview)  
 - [🖼 Architecture](#-architecture)  
 - [✨ Features](#-features)  
 - [⚙️ Requirements](#️-requirements)  
-- [📥 Installation](#-installation)  
 - [🚦 Quick Start](#-quick-start)  
-- [🛠 Configuration](#-configuration)  
-- [📁 Repository Structure](#-repository-structure)  
-- [🔍 Example Usage](#-example-usage)  
-- [📈 Evaluation](#-evaluation)  
 - [🤝 Contributing](#-contributing)  
 - [📄 License](#-license)  
 - [📚 Citation](#-citation)
-
----
-
-## 🚀 Overview
-
-
 
 ---
 
@@ -35,26 +22,13 @@
 
 ---
 
-## ✨ Features
-
-
----
-
 ## ⚙️ Requirements
 
 Install dependencies:
 
-```bash
+1. use one conda env to install habitat-sim
+2. use another one conda env to install unik3d
 
-```
-
----
-
-## 📥 Installation
-
-```bash
-
-```
 
 ---
 
@@ -63,37 +37,32 @@ Install dependencies:
 
 
 ```bash
+cd axground3d
 
+# use habitat-sim env
+python ./run_gen_real.py
+
+# use unik3d env
+python ./run_gen_ply.py
+
+# use habitat-sim env
+python ./run_gen_fake.py
+
+# Evaluation
+python ./fid_cal.py
 ```
 
 ---
 
 ## 🛠 Configuration
 
-All hyperparameters live in `.default.yaml`. Key sections:
+All hyperparameters live in `.default.yaml`. Make one `.local.yaml` first. All hyperparameters live in `.local.yaml`. Key sections:
 
-```yaml
-
+``` yaml
+mp3d_habitat_scene_dataset_path: "<your path>/mp3d/"
+vlm_model_path: "./model/Janus-Pro-1B"
+number_of_node_per_scene: 1
 ```
-
----
-
-## 📁 Repository Structure
-
-```
-
-```
-
----
-
-## 🔍 Example Usage
-
-
----
-
-## 📈 Evaluation
-
-
 ---
 
 ## 🤝 Contributing
