@@ -76,7 +76,7 @@ class HabitatSimNonInteractiveViewer(Application):
         """
         make_action_spec = habitat_sim.agent.ActionSpec
         make_actuation_spec = habitat_sim.agent.ActuationSpec
-        MOVE, LOOK = 0.07, 1.5
+        MOVE, LOOK = 1, 30
         actions = [
             "move_left", "turn_left", "move_right", "turn_right",
             "move_backward", "look_up", "move_forward", "look_down",
@@ -267,8 +267,8 @@ def create_viewer(scene_path):
     # create an viewer to get the rendering image
     sim_settings = default_sim_settings.copy()
     sim_settings["scene"] = scene_path
-    sim_settings["window_width"] = 800
-    sim_settings["window_height"] = 600
+    sim_settings["window_width"] = 512
+    sim_settings["window_height"] = 512
     sim_settings["default_agent"] = 0
     return HabitatSimNonInteractiveViewer(sim_settings)
 
