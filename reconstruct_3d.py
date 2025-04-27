@@ -20,15 +20,21 @@ class ViewRenderer:
         }
         self.agent_settings = agent_settings
         self.ply = ply
-        self.extrinsic = estimate_extrinsic_from_ray_depth(depth=depth,ray=rays,agent_settings=agent_settings)
 
+        # estimate camera extrinsic
+        extrinsic = estimate_extrinsic_from_ray_depth(depth=depth,ray=rays,agent_settings=agent_settings)
         # Build camera intrinsics
         intrinsic = agent_settings['intrinsic']
-        self.pinhole = o3d.camera.PinholeCameraIntrinsic(
+        pinhole = o3d.camera.PinholeCameraIntrinsic(
             intrinsic['width'], intrinsic['height'],
             intrinsic['fx'], intrinsic['fy'],
             intrinsic['cx'], intrinsic['cy']
         )
+        self.cam_param = o3d.camera.PinholeCameraParameters()
+        self.cam_param.intrinsic = pinhole
+        self.cam_param.extrinsic = extrinsic
+
+        self.extrinsic = extrinsic
 
         # Create visualizer
         self.vis = o3d.visualization.Visualizer()
@@ -40,6 +46,11 @@ class ViewRenderer:
         # Load point cloud
         self.pcd = ply
         self.vis.add_geometry(self.pcd)
+        self.vis.poll_events()
+        self.vis.update_renderer()
+        self.ctr = self.vis.get_view_control()
+
+        self.ctr.convert_from_pinhole_camera_parameters(self.cam_param, allow_arbitrary=True)
 
     def move_forward(self, distance):
         """
@@ -110,23 +121,14 @@ class ViewRenderer:
         self.extrinsic = extrinsic_new
 
     def render_view(self):
-        cam_param = o3d.camera.PinholeCameraParameters()
-        cam_param.intrinsic = self.pinhole
-        cam_param.extrinsic = self.extrinsic
-
-        ctr = self.vis.get_view_control()
-        ctr.convert_from_pinhole_camera_parameters(cam_param, allow_arbitrary=True)
-        ctr.set_zoom(0.35)
-
+        self.cam_param.extrinsic = self.extrinsic
+        self.ctr.convert_from_pinhole_camera_parameters(self.cam_param, allow_arbitrary=True)
         self.vis.poll_events()
         self.vis.update_renderer()
-
-        # Capture screen image as numpy array
-        img = np.asarray(self.vis.capture_screen_float_buffer(do_render=True))  # (H,W,3) float32 in [0,1]
-        # Optionally scale to [0,255] and uint8
+        img = np.asarray(self.vis.capture_screen_float_buffer(do_render=True))  # float in [0,1]
         img = (img * 255).clip(0, 255).astype(np.uint8)
-
         return img
+
 
     def save_image(self, save_path):
         self.vis.poll_events()
@@ -199,6 +201,7 @@ def estimate_extrinsic_from_ray_depth(ray: np.ndarray,
     # 5. Translation
     h = agent_settings['height']
     C = np.array([0.0, 0.0, h], dtype=np.float32)
+    C = C - f_new * 1.0
     t = - R @ C
 
     # 6. Assemble extrinsic
@@ -212,15 +215,14 @@ def estimate_extrinsic_from_ray_depth(ray: np.ndarray,
 
 
 
-
 def test():
     # 1. Load test files
     # Load a test PLY (you should have a ply file already)
-    pcd = o3d.io.read_point_cloud("data/output/view_001/view_001.ply")
+    pcd = o3d.io.read_point_cloud("data/output/view_002/view_002.ply")
 
     # Load test depth and ray images (they can come from UniK3D output or saved .pngs)
-    depth = imageio.imread("data/output/view_001/view_001_depth.png").astype(np.float32)
-    ray = imageio.imread("data/output/view_001/view_001_rays.png").astype(np.float32)
+    depth = imageio.imread("data/output/view_002/view_002_depth.png").astype(np.float32)
+    ray = imageio.imread("data/output/view_002/view_002_rays.png").astype(np.float32)
 
     # If ray is uint8 0-255, you can preprocess inside the class (already handled)
 
@@ -229,12 +231,13 @@ def test():
 
     # 3. Test rendering front view
     renderer.render_view()
-    renderer.save_image("front.png")
+    renderer.save_image("original.png")
 
     # move forward for 1 meter
-    renderer.move_forward(1.5)
+    renderer.move_forward(-1)
     renderer.render_view()
     renderer.save_image("forward.png")
+
 
     # # 4. Rotate right 30 degrees and save
     # renderer.rotate_extrinsic(yaw_deg=15)
@@ -244,9 +247,7 @@ def test():
     # 5. Rotate left 60 degrees and save
     renderer.rotate_extrinsic(yaw_deg=-30)
     renderer.render_view()
-    renderer.save_image("left30.png")
 
-    # 6. Done
 
 
 test()
