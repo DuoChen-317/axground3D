@@ -38,8 +38,8 @@ def run_gen_ply(scene_id:str):
         vec = mn.Vector3(*pos)
         viewer.transit_to_goal(vec)
         file_name = os.path.join("./frames/state_base", f"{scene_id}_s{ids}_step_base.png")
-        viewer.save_viewpoint_image(file_name)
-
+        state_img = viewer.save_viewpoint_image(file_name)
+        
         ply_file_name = os.path.join(
             "./data", f"{scene_id}_s{ids}_base.ply"
         )
