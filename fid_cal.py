@@ -77,13 +77,13 @@ if __name__ == "__main__":
 
     evaluator = Engine(eval_step)
 
-    
     fid_metric = FID(num_features=2048, device=device,feature_extractor=wrapper_model)
     fid_metric.attach(evaluator, "fid")  
 
+    print("Calculating FID...")
     zipped_loader = zip(fake_loader, real_loader)
-
-    evaluator.run(zipped_loader)
     
+    evaluator.run(zipped_loader)
+
     fid_value = evaluator.state.metrics["fid"]
     print(f"FID between real and fake: {fid_value:.4f}")
