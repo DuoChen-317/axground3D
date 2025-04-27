@@ -5,10 +5,15 @@ model/
 data/*.ply
 
 /__pycache__/
+
 /data/input/
 /data/output/
+/data/scenes/
+
 frames/fake/*
 frames/real/*
+frames/state_base/*
+
 habitat-sim
 habitat-lab
 UniK3D
