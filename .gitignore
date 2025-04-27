@@ -12,7 +12,6 @@ data/*.ply
 
 frames/fake/*
 frames/real/*
-frames/state_base/*
 
 habitat-sim
 habitat-lab

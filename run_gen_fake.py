@@ -14,8 +14,8 @@ from config_util import (
 
 
 for scene_id in MP3D_DATASET_SCENE_IDS_LIST:
-    ply_path = os.path.join("./data",scene_id, f"{scene_id}_s0_base.ply")
-    depth_path = os.path.join("./data",scene_id, f"{scene_id}_s0_base_depth.png")
-    ray_path = os.path.join("./data",scene_id, f"{scene_id}_s0_base_rays.png")
+    ply_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s0_base.ply")
+    depth_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s0_base_depth.png")
+    ray_path = os.path.join("./data/scenes",scene_id, f"{scene_id}_s0_base_rays.png")
 
     print(ply_path, depth_path, ray_path)
