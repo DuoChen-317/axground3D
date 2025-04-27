@@ -29,8 +29,8 @@ def fill_in(init_image: Image.Image, mask_image: Image.Image) -> Image.Image:
         prompt="a indoor room space, with funitures ",  # empty prompt to rely solely on surrounding context
         image=init_image,
         mask_image=mask_image,
-        guidance_scale=6.5,  # adjust as needed
-        num_inference_steps=25,
+        guidance_scale=8,  # adjust as needed
+        num_inference_steps=5,
     ).images[0]
-
+    
     return result

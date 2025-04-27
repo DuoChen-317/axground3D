@@ -222,8 +222,8 @@ class ViewRenderer:
         extrinsic[:3, :3] = R
         extrinsic[:3, 3] = t
 
-        print("Estimated extrinsic (world→camera):")
-        print(extrinsic)
+        # print("Estimated extrinsic (world→camera):")
+        # print(extrinsic)
         return extrinsic
 
 
