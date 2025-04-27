@@ -19,9 +19,8 @@ import tqdm
 
 
 
-def run_gen_fake(scene_id:str):
+def run_gen_fake(scene_id:str,my_diffuser:ViewDiffuser):
     save_intermediate = False
-    my_diffuser = ViewDiffuser()
     for ids in range(NUM_OF_NODES_PRE_SCENE):
             
         ply_path = os.path.join("./data/scenes",f"{scene_id}_s{ids}", f"{scene_id}_s{ids}.ply")
@@ -66,11 +65,12 @@ def run_gen_fake(scene_id:str):
 
 
 if __name__ == "__main__":
-
-    results = Parallel(n_jobs=2)(
+    main_diffuser = ViewDiffuser()
+    results = Parallel(n_jobs=1)(
             # stack the scene into path
             delayed(run_gen_fake)(
                 scene_id=scene_id,
+                my_diffuser=main_diffuser,
             )
             for scene_id in MP3D_DATASET_SCENE_IDS_LIST
         )
