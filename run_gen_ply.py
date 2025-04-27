@@ -10,14 +10,15 @@ from PIL import Image
 from img_to_3d import infer
 import os
 
-def run_gen_ply(frame_path:str,save_name,save_path):
+def run_gen_ply(frame_path:str,save_path):
     # load the image
     img = Image.open(frame_path)
     filename = os.path.basename(frame_path)
-    # get the scene_id
-    scene_id = filename.split('_s0')[0]
+    # get the save name
+    save_name = "_".join(filename.split('_')[0:2])
+   
     # infer
-    output = infer(img,save_path,scene_id,True,True)
+    output = infer(img,save_path,save_name,True,True)
 
 
 
