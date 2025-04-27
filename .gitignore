@@ -2,7 +2,8 @@ data/.DS_Store
 local.yaml
 .idea
 model/
-data
+data/*.ply
+
 /__pycache__/
 
 frames/fake/*
