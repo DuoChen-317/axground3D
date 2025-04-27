@@ -14,9 +14,6 @@ from ignite.utils import *
 import torch.nn as nn
 from pytorch_fid.inception import InceptionV3
 
-
-manual_seed(12345)
-
 class ImageFolderDataset(Dataset):
     def __init__(self, folder, transform=None):
         self.paths = [os.path.join(folder, f) for f in os.listdir(folder)
@@ -45,7 +42,16 @@ class WrapperInceptionV3(nn.Module):
         y = y[0]
         y = y[:, :, 0, 0]
         return y
-if __name__ == "__main__":
+
+def calculate_fid(real_path="frames/real", fake_path="frames/fake"):
+    
+    # check if the paths exist and images are present
+    if not os.path.exists(real_path) or not os.path.exists(fake_path):
+        raise FileNotFoundError("Real or fake image directory does not exist.")
+    if not os.listdir(real_path) or not os.listdir(fake_path):
+        raise FileNotFoundError("Real or fake image directory is empty.")
+    
+    manual_seed(12345)
 
     transform = transforms.Compose([
         transforms.Resize((299, 299)),
@@ -54,8 +60,8 @@ if __name__ == "__main__":
                             [0.229, 0.224, 0.225])
     ])
 
-    real_ds = ImageFolderDataset("frames/real", transform)
-    fake_ds = ImageFolderDataset("frames/fake", transform)
+    real_ds = ImageFolderDataset(real_path, transform)
+    fake_ds = ImageFolderDataset(fake_path, transform)
 
     real_loader = DataLoader(real_ds, batch_size=32, shuffle=False, num_workers=4)
     fake_loader = DataLoader(fake_ds, batch_size=32, shuffle=False, num_workers=4)
@@ -87,3 +93,8 @@ if __name__ == "__main__":
 
     fid_value = evaluator.state.metrics["fid"]
     print(f"FID between real and fake: {fid_value:.4f}")
+    return fid_value
+
+if __name__ == "__main__":
+
+    calculate_fid()
