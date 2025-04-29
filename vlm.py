@@ -19,7 +19,7 @@ vl_gpt = vl_gpt.to(torch.bfloat16).to('mps').eval()
 conversation = [
     {
         "role": "<|User|>",
-        "content": "A indoor scene according to the image provided. KEEP CONSISTIS. But move forward 1m and generate a new image.",
+        "content": "A indoor scene according to the image provided. KEEP CONSISTIS. But Turn left 30 degree and generate a new image.",
         "images": [ "./data/vlm_test1.jpg" ],
     },
     {"role": "<|Assistant|>", "content": ""},
